@@ -109,9 +109,9 @@ do
 
   -- Make line numbers default
   vim.o.number = true
-  -- You can also add relative line numbers, to help with jumping.
-  --  Experiment for yourself to see if you like it!
-  -- vim.o.relativenumber = true
+  -- Relative line numbers: the current line shows its absolute number,
+  -- every other line shows its distance, so `12j` / `8k` jumps read straight off the gutter
+  vim.o.relativenumber = true
 
   -- Enable mouse mode, can be useful for resizing splits for example!
   vim.o.mouse = 'a'
