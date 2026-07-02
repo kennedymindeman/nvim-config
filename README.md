@@ -27,6 +27,14 @@ nvim                                           # done
 Requires a terminal with Nerd Font glyphs (Ghostty has them built in) and a C
 compiler for treesitter parsers (`xcode-select --install`).
 
+The colorscheme is `tokyonight-night`; the rest of the terminal matches by
+setting the same theme in Ghostty's config (not part of this repo):
+
+```ini
+# ~/Library/Application Support/com.mitchellh.ghostty/config
+theme = TokyoNight Night
+```
+
 ## Setup on Windows
 
 Not set up yet. When needed: config path is `~/AppData/Local/nvim`, install
