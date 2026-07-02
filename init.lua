@@ -99,7 +99,8 @@ do
   vim.g.maplocalleader = ' '
 
   -- Set to true if you have a Nerd Font installed and selected in the terminal
-  vim.g.have_nerd_font = false
+  -- (Ghostty ships with built-in Nerd Font glyphs)
+  vim.g.have_nerd_font = true
 
   -- [[ Setting options ]]
   --  See `:help vim.o`
@@ -250,6 +251,16 @@ do
     desc = 'Highlight when yanking (copying) text',
     group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
     callback = function() vim.hl.on_yank() end,
+  })
+
+  -- Reload buffers that were changed on disk outside of nvim (e.g. by Claude Code)
+  -- 'autoread' is on by default; this makes the check actually happen when focus returns
+  vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
+    desc = 'Reload files changed outside of nvim',
+    group = vim.api.nvim_create_augroup('custom-autoread', { clear = true }),
+    callback = function()
+      if vim.fn.getcmdwintype() == '' then vim.cmd 'checktime' end
+    end,
   })
 end
 
@@ -692,9 +703,10 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    -- clangd = {},
+    clangd = {}, -- C/C++ (diagnostics include clang-tidy checks when the project configures them)
+    basedpyright = {}, -- Python type checking, hover, goto-definition
+    ruff = {}, -- Python linting + formatting
     -- gopls = {},
-    -- pyright = {},
     -- rust_analyzer = {},
     --
     -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -780,12 +792,18 @@ do
   require('conform').setup {
     notify_on_error = false,
     format_on_save = function(bufnr)
-      -- You can specify filetypes to autoformat on save here:
+      local ft = vim.bo[bufnr].filetype
+      -- C/C++: only autoformat when the project has opted in with a .clang-format file,
+      -- so work codebases without one are never reformatted against team style
+      if ft == 'c' or ft == 'cpp' then
+        if vim.fs.root(bufnr, '.clang-format') then return { timeout_ms = 500 } end
+        return nil
+      end
       local enabled_filetypes = {
-        -- lua = true,
-        -- python = true,
+        lua = true,
+        python = true,
       }
-      if enabled_filetypes[vim.bo[bufnr].filetype] then
+      if enabled_filetypes[ft] then
         return { timeout_ms = 500 }
       else
         return nil
@@ -796,12 +814,9 @@ do
     },
     -- You can also specify external formatters in here.
     formatters_by_ft = {
+      python = { 'ruff_organize_imports', 'ruff_format' },
+      -- lua uses stylua, c/cpp use clangd's clang-format via the lsp_format fallback
       -- rust = { 'rustfmt' },
-      -- Conform can also run multiple formatters sequentially
-      -- python = { "isort", "black" },
-      --
-      -- You can use 'stop_after_first' to run the first available formatter from the list
-      -- javascript = { "prettierd", "prettier", stop_after_first = true },
     },
   }
 
@@ -904,7 +919,7 @@ do
   vim.pack.add { { src = gh 'nvim-treesitter/nvim-treesitter', version = 'main' } }
 
   -- Ensure basic parsers are installed
-  local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
+  local parsers = { 'bash', 'c', 'cpp', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'python', 'query', 'vim', 'vimdoc' }
   require('nvim-treesitter').install(parsers)
 
   ---@param buf integer
@@ -953,7 +968,23 @@ do
 end
 
 -- ============================================================
--- SECTION 10: OPTIONAL EXAMPLES / NEXT STEPS
+-- SECTION 10: FILE MANAGEMENT
+-- oil.nvim: edit the filesystem like a normal buffer
+-- ============================================================
+do
+  -- Press `-` to open the current file's directory as an editable buffer:
+  -- rename a file by editing its line, delete with `dd`, create by opening
+  -- a new line and typing a name (end with `/` for a directory), then `:w`
+  -- to apply the changes. Press `-` again to go up a directory.
+  vim.pack.add { gh 'stevearc/oil.nvim' }
+  require('oil').setup {
+    view_options = { show_hidden = true },
+  }
+  vim.keymap.set('n', '-', '<cmd>Oil<CR>', { desc = 'Open parent directory (oil)' })
+end
+
+-- ============================================================
+-- SECTION 11: OPTIONAL EXAMPLES / NEXT STEPS
 -- kickstart.plugins.* examples
 -- ============================================================
 do
