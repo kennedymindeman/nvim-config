@@ -401,10 +401,13 @@ do
     },
   }
 
+  -- Catppuccin, kept alongside tokyonight for easy switching
+  vim.pack.add { gh 'catppuccin/nvim' }
+
   -- Load the colorscheme here.
-  -- Like many other themes, this one has different styles, and you could load
-  -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  vim.cmd.colorscheme 'tokyonight-night'
+  -- Alternatives already installed: 'tokyonight-night', 'tokyonight-storm',
+  -- 'catppuccin-macchiato', 'catppuccin-frappe'
+  vim.cmd.colorscheme 'catppuccin-mocha'
 
   -- Highlight todo, notes, etc in comments
   vim.pack.add { gh 'folke/todo-comments.nvim' }
