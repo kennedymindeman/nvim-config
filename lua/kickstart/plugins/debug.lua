@@ -25,6 +25,24 @@ vim.keymap.set('n', '<leader>b', function() require('dap').toggle_breakpoint() e
 vim.keymap.set('n', '<leader>B', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end, { desc = 'Debug: Set Breakpoint' })
 -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
 vim.keymap.set('n', '<F7>', function() require('dapui').toggle() end, { desc = 'Debug: See last session result.' })
+-- Terminate the session cleanly (auto-closes the dap-ui panels via the listeners below).
+vim.keymap.set('n', '<leader>dq', function() require('dap').terminate() end, { desc = 'Debug: Quit/terminate session' })
+
+-- Evaluate the expression under the cursor (or a visual selection) in a float.
+-- Press again to step into the float and expand nested values; q/<Esc> closes it.
+vim.keymap.set({ 'n', 'v' }, '<leader>de', function() require('dapui').eval() end, { desc = 'Debug: Eval expression' })
+
+-- Pop a single UI section into a large float: jumps you straight to that section
+-- AND gives it the whole screen, instead of squinting at the tiled sidebar.
+-- enter=true focuses the float so you can scroll/interact; q or <Esc> closes it.
+local function float_section(name)
+  return function() require('dapui').float_element(name, { enter = true }) end
+end
+vim.keymap.set('n', '<leader>ds', float_section 'scopes', { desc = 'Debug: Section > Scopes (variables)' })
+vim.keymap.set('n', '<leader>df', float_section 'stacks', { desc = 'Debug: Section > Frames (call stack)' })
+vim.keymap.set('n', '<leader>dw', float_section 'watches', { desc = 'Debug: Section > Watches' })
+vim.keymap.set('n', '<leader>dr', float_section 'repl', { desc = 'Debug: Section > REPL' })
+vim.keymap.set('n', '<leader>dc', float_section 'console', { desc = 'Debug: Section > Console (program output)' })
 
 local dap = require 'dap'
 local dapui = require 'dapui'
