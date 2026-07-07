@@ -668,6 +668,15 @@ do
       --
       -- When you move your cursor, the highlights will be cleared (the second autocommand).
       local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+      -- Silence diagnostics for library/stdlib buffers: picky on files we write,
+      -- quiet on files outside the project root we shouldn't be touching.
+      -- ponytail: heuristic is "outside root_dir"; a file you *do* edit outside root also goes quiet.
+      local bufname = vim.api.nvim_buf_get_name(event.buf)
+      if client and client.root_dir and bufname ~= '' and not vim.startswith(bufname, client.root_dir) then
+        vim.diagnostic.enable(false, { bufnr = event.buf })
+      end
+
       if client and client:supports_method('textDocument/documentHighlight', event.buf) then
         local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
         vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
@@ -870,7 +879,8 @@ do
       -- <c-k>: Toggle signature help
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
-      preset = 'default',
+      -- 'super-tab' = Tab accepts (VS-Code-like); swap to 'enter' or 'default' (<C-y>) to taste
+      preset = 'super-tab',
 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1000,7 +1010,7 @@ do
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug'
+  require 'kickstart.plugins.debug'
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
   -- require 'kickstart.plugins.autopairs'

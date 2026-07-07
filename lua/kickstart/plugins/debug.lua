@@ -13,6 +13,7 @@ vim.pack.add {
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
   'https://github.com/leoluz/nvim-dap-go',
+  'https://github.com/mfussenegger/nvim-dap-python',
 }
 
 -- Basic debugging keymaps, feel free to change to your liking!
@@ -93,3 +94,9 @@ require('dap-go').setup {
     detached = vim.fn.has 'win32' == 0,
   },
 }
+
+-- Python: system python3 has debugpy (pip install --user debugpy). This is both
+-- the adapter interpreter and the default one your code runs under.
+-- Per-project .vscode/launch.json configs (module/args launches) are read
+-- automatically on demand by nvim-dap — no explicit loader needed.
+require('dap-python').setup 'python3'
