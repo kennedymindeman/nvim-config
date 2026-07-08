@@ -12,6 +12,11 @@ See [CHEATSHEET.md](CHEATSHEET.md) for the editing patterns worth practicing.
   project has a `.clang-format` file
 - **Search**: telescope (`<space>sf` files, `<space>sg` project grep)
 - **Files**: oil.nvim (`-` opens the directory as an editable buffer)
+- **Debugging**: nvim-dap + dap-view for Python (debugpy); `<space>b` breakpoint,
+  `<F5>` run (reads `.vscode/launch.json`), `<space>dt` debug nearest test —
+  full keymap table in the cheatsheet's "Debugging" section
+- **Splits/panes**: `<C-hjkl>` moves across nvim splits *and* tmux panes
+  (vim-tmux-navigator; tmux side lives in the dotfiles repo)
 - **Buffers auto-reload** when files change on disk (Claude Code edits show up on focus)
 
 ## Setup on a new machine (macOS)
@@ -21,6 +26,7 @@ brew install neovim ripgrep fd tree-sitter-cli
 git clone git@github.com:kennedymindeman/nvim-config.git ~/.config/nvim
 nvim --headless "+qa"                          # installs plugins
 nvim --headless "+MasonToolsInstallSync" "+qa" # installs LSP servers
+python3 -m pip install --user debugpy pytest   # debugger adapter + test runner (not mason-managed)
 nvim                                           # done
 ```
 
