@@ -107,18 +107,19 @@ Delete = `dd`. New file = open a line, type a name (`dir/` for a directory).
 
 ## Debugging (DAP + dap-view)
 
-The loop: set a breakpoint, `<F5>`, pick a config, read state, step. A repo with
-`.vscode/launch.json` gets its configs offered automatically on `<F5>`.
+The loop: set a breakpoint, `<space>dg`, pick a config, read state, step. A repo with
+`.vscode/launch.json` gets its configs offered automatically on `<space>dg`. Keys echo
+pdb (lesson 0008): **g**o, **n**ext, **i**nto, **o**ut.
 
 | Keys | Does |
 |---|---|
 | `<space>b` | toggle breakpoint on current line (`<space>B` for a conditional one) |
-| `<F5>` | start (pick a config) / continue to next breakpoint |
+| `<space>dg` | **g**o: start (pick a config) / continue to next breakpoint |
+| `<space>dn` / `di` / `do` | step over (**n**ext) / **i**nto / **o**ut |
 | `<space>dt` | debug the test function nearest the cursor (via pytest) |
-| `<F2>` / `<F1>` / `<F3>` | step over / into / out |
 | `<space>de` | eval variable under cursor (or visual selection) in a float |
-| `<space>ds` / `df` / `dw` / `dr` / `dc` | jump to Scopes / call stack / Watches / REPL / Console |
-| `<F7>` | toggle the panel (e.g. to read output after a crash) |
+| `<space>ds` / `df` / `dw` / `dr` / `dc` | jump to Scopes / call stack (**f**rames) / Watches / REPL / Console |
+| `<space>du` | toggle the panel (e.g. to read output after a crash) |
 | `<space>dq` | terminate the session |
 
 While paused, variable values also appear inline as virtual text at the end of

@@ -12,14 +12,19 @@ vim.pack.add {
 }
 
 -- Basic debugging keymaps, feel free to change to your liking!
-vim.keymap.set('n', '<F5>', function() require('dap').continue() end, { desc = 'Debug: Start/Continue' })
-vim.keymap.set('n', '<F1>', function() require('dap').step_into() end, { desc = 'Debug: Step Into' })
-vim.keymap.set('n', '<F2>', function() require('dap').step_over() end, { desc = 'Debug: Step Over' })
-vim.keymap.set('n', '<F3>', function() require('dap').step_out() end, { desc = 'Debug: Step Out' })
-vim.keymap.set('n', '<leader>b', function() require('dap').toggle_breakpoint() end, { desc = 'Debug: Toggle Breakpoint' })
-vim.keymap.set('n', '<leader>B', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end, { desc = 'Debug: Set Breakpoint' })
+-- Debug control loop lives in the <leader>d group instead of the (Fn-shadowed,
+-- reach-breaking) function keys. Mnemonics echo pdb from lesson 0008: g = go /
+-- continue, n = next (step over), i = into, o = out. Two keystrokes per step, but
+-- discoverable via which-key and no thumb-stretch to the number row. This also
+-- frees <F1> to be :help again.
+vim.keymap.set('n', '<leader>dg', function() require('dap').continue() end, { desc = 'Debug: Go / start / continue' })
+vim.keymap.set('n', '<leader>dn', function() require('dap').step_over() end, { desc = 'Debug: step over (Next)' })
+vim.keymap.set('n', '<leader>di', function() require('dap').step_into() end, { desc = 'Debug: step Into' })
+vim.keymap.set('n', '<leader>do', function() require('dap').step_out() end, { desc = 'Debug: step Out' })
+vim.keymap.set('n', '<leader>b', function() require('dap').toggle_breakpoint() end, { desc = 'Debug: toggle Breakpoint' })
+vim.keymap.set('n', '<leader>B', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end, { desc = 'Debug: conditional Breakpoint' })
 -- Toggle the dap-view panel (also how you see output after an unhandled exception).
-vim.keymap.set('n', '<F7>', function() require('dap-view').toggle() end, { desc = 'Debug: Toggle UI panel' })
+vim.keymap.set('n', '<leader>du', function() require('dap-view').toggle() end, { desc = 'Debug: toggle UI panel' })
 -- Terminate the session cleanly (auto_toggle closes the dap-view panel with it).
 vim.keymap.set('n', '<leader>dq', function() require('dap').terminate() end, { desc = 'Debug: Quit/terminate session' })
 
