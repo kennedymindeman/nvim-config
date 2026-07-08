@@ -135,6 +135,6 @@ jumps there so Scopes shows *that* frame's variables. The panel is a normal wind
 
 - `ciw` / `ci(` / `ci"` — change inside word / parens / quotes (mini.ai makes these smart)
 - `saiw)` — surround a word with parens; `sd"` deletes surrounding quotes
-- `<C-h/j/k/l>` — move between splits
+- `<C-h/j/k/l>` — move between splits *and* tmux panes, one key, no prefix (in a shell pane, clear the screen with `<prefix> C-l` or `clear`)
 - `u` undo, `<C-r>` redo — undo history survives closing the file (undofile is on)
 - `:checkhealth` — first stop when something seems broken
