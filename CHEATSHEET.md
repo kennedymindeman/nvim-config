@@ -105,6 +105,31 @@ Delete = `dd`. New file = open a line, type a name (`dir/` for a directory).
 | `<space>q` | all diagnostics in a list |
 | `<space>f` | format buffer manually (Python/Lua also format on save) |
 
+## Debugging (DAP + dap-view)
+
+The loop: set a breakpoint, `<F5>`, pick a config, read state, step. A repo with
+`.vscode/launch.json` gets its configs offered automatically on `<F5>`.
+
+| Keys | Does |
+|---|---|
+| `<space>b` | toggle breakpoint on current line (`<space>B` for a conditional one) |
+| `<F5>` | start (pick a config) / continue to next breakpoint |
+| `<F2>` / `<F1>` / `<F3>` | step over / into / out |
+| `<space>de` | eval variable under cursor (or visual selection) in a float |
+| `<space>ds` / `df` / `dw` / `dr` / `dc` | jump to Scopes / call stack / Watches / REPL / Console |
+| `<F7>` | toggle the panel (e.g. to read output after a crash) |
+| `<space>dq` | terminate the session |
+
+While paused, variable values also appear inline as virtual text at the end of
+each line — often you never need the panel at all.
+
+In the panel (it's one window with tabs): press the winbar letters `W S E B T R C`
+to switch sections, `g?` for that section's keymaps. The essentials: in **Watches**,
+`i` inserts a new expression (re-evaluated on every step); in the **REPL**, `i` then
+type any expression valid in the paused frame; in **Threads**, `<CR>` on a frame
+jumps there so Scopes shows *that* frame's variables. The panel is a normal window —
+`<C-w>_` maximizes it, `<C-w>=` re-equalizes.
+
 ## Odds and ends worth knowing early
 
 - `ciw` / `ci(` / `ci"` — change inside word / parens / quotes (mini.ai makes these smart)
