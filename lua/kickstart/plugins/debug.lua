@@ -8,13 +8,11 @@
 
 vim.pack.add {
   'https://github.com/mfussenegger/nvim-dap',
-  'https://github.com/rcarriga/nvim-dap-ui',
-  'https://github.com/nvim-neotest/nvim-nio',
+  'https://github.com/igorlfs/nvim-dap-view',
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
   'https://github.com/leoluz/nvim-dap-go',
   'https://github.com/mfussenegger/nvim-dap-python',
-  'https://github.com/theHamsta/nvim-dap-virtual-text',
 }
 
 -- Basic debugging keymaps, feel free to change to your liking!
@@ -24,29 +22,26 @@ vim.keymap.set('n', '<F2>', function() require('dap').step_over() end, { desc = 
 vim.keymap.set('n', '<F3>', function() require('dap').step_out() end, { desc = 'Debug: Step Out' })
 vim.keymap.set('n', '<leader>b', function() require('dap').toggle_breakpoint() end, { desc = 'Debug: Toggle Breakpoint' })
 vim.keymap.set('n', '<leader>B', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end, { desc = 'Debug: Set Breakpoint' })
--- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-vim.keymap.set('n', '<F7>', function() require('dapui').toggle() end, { desc = 'Debug: See last session result.' })
--- Terminate the session cleanly (auto-closes the dap-ui panels via the listeners below).
+-- Toggle the dap-view panel (also how you see output after an unhandled exception).
+vim.keymap.set('n', '<F7>', function() require('dap-view').toggle() end, { desc = 'Debug: Toggle UI panel' })
+-- Terminate the session cleanly (auto_toggle closes the dap-view panel with it).
 vim.keymap.set('n', '<leader>dq', function() require('dap').terminate() end, { desc = 'Debug: Quit/terminate session' })
 
--- Evaluate the expression under the cursor (or a visual selection) in a float.
--- Press again to step into the float and expand nested values; q/<Esc> closes it.
-vim.keymap.set({ 'n', 'v' }, '<leader>de', function() require('dapui').eval() end, { desc = 'Debug: Eval expression' })
+-- Hover/eval the expression under the cursor (or a visual selection) in a float.
+vim.keymap.set({ 'n', 'v' }, '<leader>de', function() require('dap-view').hover() end, { desc = 'Debug: Hover/eval expression' })
 
--- Pop a single UI section into a large float: jumps you straight to that section
--- AND gives it the whole screen, instead of squinting at the tiled sidebar.
--- enter=true focuses the float so you can scroll/interact; q or <Esc> closes it.
-local function float_section(name)
-  return function() require('dapui').float_element(name, { enter = true }) end
+-- Jump straight to a section: it fills the whole dap-view panel. (You can also
+-- press the winbar letters W/S/E/B/T/R/C once the panel is focused.)
+local function jump(view)
+  return function() require('dap-view').jump_to_view(view) end
 end
-vim.keymap.set('n', '<leader>ds', float_section 'scopes', { desc = 'Debug: Section > Scopes (variables)' })
-vim.keymap.set('n', '<leader>df', float_section 'stacks', { desc = 'Debug: Section > Frames (call stack)' })
-vim.keymap.set('n', '<leader>dw', float_section 'watches', { desc = 'Debug: Section > Watches' })
-vim.keymap.set('n', '<leader>dr', float_section 'repl', { desc = 'Debug: Section > REPL' })
-vim.keymap.set('n', '<leader>dc', float_section 'console', { desc = 'Debug: Section > Console (program output)' })
+vim.keymap.set('n', '<leader>ds', jump 'scopes', { desc = 'Debug: Section > Scopes (variables)' })
+vim.keymap.set('n', '<leader>df', jump 'threads', { desc = 'Debug: Section > Threads (call stack)' })
+vim.keymap.set('n', '<leader>dw', jump 'watches', { desc = 'Debug: Section > Watches' })
+vim.keymap.set('n', '<leader>dr', jump 'repl', { desc = 'Debug: Section > REPL' })
+vim.keymap.set('n', '<leader>dc', jump 'console', { desc = 'Debug: Section > Console (program output)' })
 
 local dap = require 'dap'
-local dapui = require 'dapui'
 
 require('mason-nvim-dap').setup {
   -- Makes a best effort to setup the various debuggers with
@@ -65,32 +60,22 @@ require('mason-nvim-dap').setup {
   },
 }
 
--- Dap UI setup
--- For more information, see |:help nvim-dap-ui|
----@diagnostic disable-next-line: missing-fields
-dapui.setup {
-  -- Set icons to characters that are more likely to work in every terminal.
-  --    Feel free to remove or use ones that you like more! :)
-  --    Don't feel like these are good choices.
-  icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
-  ---@diagnostic disable-next-line: missing-fields
-  controls = {
-    icons = {
-      pause = '⏸',
-      play = '▶',
-      step_into = '⏎',
-      step_over = '⏭',
-      step_out = '⏮',
-      step_back = 'b',
-      run_last = '▶▶',
-      terminate = '⏹',
-      disconnect = '⏏',
-    },
+-- dap-view: single tabbed panel instead of dap-ui's tiled sidebar. Each section
+-- (winbar tabs W/S/E/B/T/R/C) fills the whole panel, so nothing is cramped.
+-- For more information, see |:help dap-view.txt|.
+require('dap-view').setup {
+  -- Open the panel when a session starts, close it when the session ends.
+  auto_toggle = true,
+  winbar = {
+    -- Add "console" (program stdout/stderr) to the default tab set.
+    sections = { 'watches', 'scopes', 'exceptions', 'breakpoints', 'threads', 'repl', 'console' },
+  },
+  -- Inline variable values at end of line while paused (dap-view's built-in
+  -- virtual text; replaces the separate nvim-dap-virtual-text plugin).
+  virtual_text = {
+    enabled = true,
   },
 }
-
--- Inline variable values while paused, shown as virtual text at the end of the line.
-require('nvim-dap-virtual-text').setup {}
 
 -- Change breakpoint icons (nerd font is on, so use the pretty glyphs).
 vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
@@ -104,9 +89,7 @@ for type, icon in pairs(breakpoint_icons) do
   vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
 end
 
-dap.listeners.after.event_initialized['dapui_config'] = dapui.open
-dap.listeners.before.event_terminated['dapui_config'] = dapui.close
-dap.listeners.before.event_exited['dapui_config'] = dapui.close
+-- (Panel open/close is handled by auto_toggle above — no manual listeners needed.)
 
 -- Install golang specific config
 require('dap-go').setup {
