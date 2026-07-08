@@ -1,17 +1,13 @@
 -- debug.lua
 --
--- Shows how to use the DAP plugin to debug your code.
---
--- Primarily focused on configuring the debugger for Go, but can
--- be extended to other languages as well. That's why it's called
--- kickstart.nvim and not kitchen-sink.nvim ;)
+-- DAP debugging: nvim-dap + dap-view UI, configured for Python (debugpy).
+-- Keymap reference lives in CHEATSHEET.md ("Debugging" section).
 
 vim.pack.add {
   'https://github.com/mfussenegger/nvim-dap',
   'https://github.com/igorlfs/nvim-dap-view',
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
-  'https://github.com/leoluz/nvim-dap-go',
   'https://github.com/mfussenegger/nvim-dap-python',
 }
 
@@ -52,12 +48,9 @@ require('mason-nvim-dap').setup {
   -- see mason-nvim-dap README for more information
   handlers = {},
 
-  -- You'll need to check that you have the required things installed
-  -- online, please don't ask me how to install them :)
-  ensure_installed = {
-    -- Update this to ensure that you have the debuggers for the langs you want
-    'delve',
-  },
+  -- Update this to ensure that you have the debuggers for the langs you want.
+  -- (Python's debugpy is NOT mason-managed here — see dap-python setup below.)
+  ensure_installed = {},
 }
 
 -- dap-view: single tabbed panel instead of dap-ui's tiled sidebar. Each section
@@ -90,15 +83,6 @@ for type, icon in pairs(breakpoint_icons) do
 end
 
 -- (Panel open/close is handled by auto_toggle above — no manual listeners needed.)
-
--- Install golang specific config
-require('dap-go').setup {
-  delve = {
-    -- On Windows delve must be run attached or it crashes.
-    -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
-    detached = vim.fn.has 'win32' == 0,
-  },
-}
 
 -- Python: system python3 has debugpy (pip install --user debugpy). This is both
 -- the adapter interpreter and the default one your code runs under.
