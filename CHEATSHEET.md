@@ -114,6 +114,7 @@ The loop: set a breakpoint, `<F5>`, pick a config, read state, step. A repo with
 |---|---|
 | `<space>b` | toggle breakpoint on current line (`<space>B` for a conditional one) |
 | `<F5>` | start (pick a config) / continue to next breakpoint |
+| `<space>dt` | debug the test function nearest the cursor (via pytest) |
 | `<F2>` / `<F1>` / `<F3>` | step over / into / out |
 | `<space>de` | eval variable under cursor (or visual selection) in a float |
 | `<space>ds` / `df` / `dw` / `dr` / `dc` | jump to Scopes / call stack / Watches / REPL / Console |

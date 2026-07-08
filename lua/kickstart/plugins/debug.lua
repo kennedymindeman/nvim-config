@@ -89,3 +89,9 @@ end
 -- Per-project .vscode/launch.json configs (module/args launches) are read
 -- automatically on demand by nvim-dap — no explicit loader needed.
 require('dap-python').setup 'python3'
+
+-- Debug the test under the cursor. Runner is pinned to pytest (also installed
+-- --user): the auto-probe falls back to unittest, which can't discover the
+-- bare test_* functions our repos use, while pytest runs both styles.
+require('dap-python').test_runner = 'pytest'
+vim.keymap.set('n', '<leader>dt', function() require('dap-python').test_method() end, { desc = 'Debug: Nearest test method' })
