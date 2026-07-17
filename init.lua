@@ -677,7 +677,10 @@ do
       -- quiet on files outside the project root we shouldn't be touching.
       -- ponytail: heuristic is "outside root_dir"; a file you *do* edit outside root also goes quiet.
       local bufname = vim.api.nvim_buf_get_name(event.buf)
-      if client and client.root_dir and bufname ~= '' and not vim.startswith(bufname, client.root_dir) then
+      local outside_root = client and client.root_dir and bufname ~= '' and not vim.startswith(bufname, client.root_dir)
+      -- Fallback for files with no root_dir (stdlib/venv opened via grd): match library paths.
+      local is_lib = bufname:match 'site%-packages' or bufname:match '[/\\][Ll]ib[/\\]' or bufname:match 'uv[/\\]python'
+      if outside_root or is_lib then
         vim.diagnostic.enable(false, { bufnr = event.buf })
       end
 
