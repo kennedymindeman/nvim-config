@@ -45,10 +45,58 @@ theme = Catppuccin Mocha
 
 ## Setup on Windows
 
-Not set up yet. When needed: config path is `~/AppData/Local/nvim`, install
-neovim/ripgrep/fd/tree-sitter-cli via winget or scoop, and a C compiler
-(zig or MSVC) is required for treesitter. Everything else (mason, plugins)
-is cross-platform.
+Config path is `~/AppData/Local/nvim` (i.e. `%LOCALAPPDATA%\nvim`).
+
+```powershell
+scoop install neovim ripgrep fd tree-sitter          # or winget
+git clone https://github.com/kennedymindeman/nvim-config.git $env:LOCALAPPDATA\nvim
+nvim --headless "+qa"                                 # installs plugins
+nvim --headless "+MasonToolsInstallSync" "+qa"        # installs LSP servers
+nvim                                                  # done
+```
+
+Windows-specific gotchas (all learned the hard way):
+
+- **tree-sitter CLI is mandatory, not optional.** This config tracks
+  nvim-treesitter's `main` branch, which shells out to the `tree-sitter`
+  binary to compile parsers. Without it on `PATH` you get
+  `ENOENT: 'tree-sitter'`. `scoop install tree-sitter` puts a shim on the
+  persistent user PATH so the GUI nvim sees it.
+- **C compiler = MSVC.** Parsers compile via the Visual Studio 2022 C++
+  toolchain (the tree-sitter build auto-detects MSVC). Install the
+  "Desktop development with C++" workload. Zig also works if you prefer.
+- **Nerd Font terminal** required for glyphs (Windows Terminal + a Nerd
+  Font, or Ghostty). Colorscheme is `catppuccin-mocha`.
+
+### clangd for a C/C++ project
+
+clangd needs a compilation database. For a CMake project, generate one and
+drop a `.clangd` next to it pointing at the build dir:
+
+```powershell
+cmake -S . -B out\build\clangd -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+```
+
+```yaml
+# .clangd  (at the project root; keep it out of version control)
+CompileFlags:
+  CompilationDatabase: out/build/clangd
+```
+
+`CMAKE_EXPORT_COMPILE_COMMANDS` only emits `compile_commands.json` with the
+**Ninja** or Makefile generators, not the Visual Studio generator. Generated
+headers (protobuf, etc.) must be built at least once or clangd reports them as
+missing. clangd's semantic-token highlighting is disabled in `init.lua` so
+tree-sitter owns colors; clangd still does diagnostics, navigation, and
+unused-include / deprecation warnings.
+
+### Perforce auto-checkout
+
+Opening a read-only file and editing it fires a `FileChangedRO` autocmd that
+runs `p4 edit` and clears the readonly flag. Requires the `p4` CLI on PATH.
+For multi-workspace setups, `p4 set P4CONFIG=.p4config` and a `.p4config`
+(`P4CLIENT=<client>`) at each workspace root lets p4 pick the right client by
+directory.
 
 ## Pulling kickstart updates
 

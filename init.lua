@@ -189,7 +189,7 @@ do
   -- Diagnostic Config & Keymaps
   --  See `:help vim.diagnostic.Opts`
   vim.diagnostic.config {
-    update_in_insert = false,
+    update_in_insert = true, -- refresh diagnostics live while typing (don't wait for InsertLeave)
     severity_sort = true,
     float = { border = 'rounded', source = 'if_many' },
     underline = { severity = { min = vim.diagnostic.severity.WARN } },
@@ -263,6 +263,24 @@ do
     group = vim.api.nvim_create_augroup('custom-autoread', { clear = true }),
     callback = function()
       if vim.fn.getcmdwintype() == '' then vim.cmd 'checktime' end
+    end,
+  })
+
+  -- Auto-checkout Perforce files: on the first edit of a read-only file, run
+  -- `p4 edit` (client is resolved per-workspace via .p4config) and make it writable.
+  vim.api.nvim_create_autocmd('FileChangedRO', {
+    desc = 'p4 edit read-only files on first change',
+    group = vim.api.nvim_create_augroup('custom-p4-edit', { clear = true }),
+    callback = function(args)
+      local file = vim.api.nvim_buf_get_name(args.buf)
+      if file == '' then return end
+      local res = vim.system({ 'p4', 'edit', file }, { cwd = vim.fn.fnamemodify(file, ':h'), text = true }):wait()
+      if res.code == 0 then
+        vim.bo[args.buf].readonly = false
+        vim.notify('p4 edit ' .. vim.fn.fnamemodify(file, ':t'))
+      else
+        vim.notify('p4 edit failed: ' .. ((res.stderr or '') .. (res.stdout or '')), vim.log.levels.WARN)
+      end
     end,
   })
 end
@@ -673,11 +691,22 @@ do
       -- When you move your cursor, the highlights will be cleared (the second autocommand).
       local client = vim.lsp.get_client_by_id(event.data.client_id)
 
+      -- Let tree-sitter own syntax highlighting for C/C++. clangd's semantic tokens
+      -- arrive async (slow, causing recolor flicker) and it dims inactive `#if`
+      -- branches like comments (e.g. `#if _BullseyeCoverage`), fighting tree-sitter.
+      if client and client.name == 'clangd' then
+        client.server_capabilities.semanticTokensProvider = nil
+      end
+
       -- Silence diagnostics for library/stdlib buffers: picky on files we write,
       -- quiet on files outside the project root we shouldn't be touching.
       -- ponytail: heuristic is "outside root_dir"; a file you *do* edit outside root also goes quiet.
       local bufname = vim.api.nvim_buf_get_name(event.buf)
-      local outside_root = client and client.root_dir and bufname ~= '' and not vim.startswith(bufname, client.root_dir)
+      -- On Windows clangd reports root_dir with '/', but buffer names use '\'; normalize
+      -- slashes + case so in-project files aren't spuriously treated as "outside root".
+      local function norm(p) return p and vim.fs.normalize(p):lower() or nil end
+      local nroot = norm(client and client.root_dir)
+      local outside_root = nroot and bufname ~= '' and not vim.startswith(norm(bufname), nroot)
       -- Fallback for files with no root_dir (stdlib/venv opened via grd): match library paths.
       local is_lib = bufname:match 'site%-packages' or bufname:match '[/\\][Ll]ib[/\\]' or bufname:match 'uv[/\\]python'
       if outside_root or is_lib then
@@ -722,7 +751,11 @@ do
   --  See `:help lsp-config` for information about keys and how to configure
   ---@type table<string, vim.lsp.Config>
   local servers = {
-    clangd = {}, -- C/C++ (diagnostics include clang-tidy checks when the project configures them)
+    clangd = {
+      -- Keep the preamble PCH in RAM instead of a temp file, so include-line edits
+      -- (which invalidate the preamble) rebuild without disk I/O. Costs more memory.
+      cmd = { 'clangd', '--pch-storage=memory' },
+    }, -- C/C++ (diagnostics include clang-tidy checks when the project configures them)
     basedpyright = {}, -- Python type checking, hover, goto-definition
     ruff = {}, -- Python linting + formatting
     -- gopls = {},
