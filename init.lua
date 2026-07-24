@@ -320,6 +320,7 @@ do
       if output == '' then output = 'No output from build command.' end
       vim.notify(('Build failed for %s:\n%s'):format(name, output), vim.log.levels.ERROR)
     end
+    return result.code
   end
 
   -- This autocommand runs after a plugin is installed or updated and
@@ -332,8 +333,21 @@ do
       local kind = ev.data.kind
       if kind ~= 'install' and kind ~= 'update' then return end
 
-      if name == 'telescope-fzf-native.nvim' and vim.fn.executable 'make' == 1 then
-        run_build(name, { 'make' }, ev.data.path)
+      if name == 'telescope-fzf-native.nvim' then
+        -- Prefer `make` (Unix); fall back to cmake so this also builds on
+        -- Windows, where there's usually no `make`. Without the native build
+        -- Telescope's fallback sorter can't do space-separated AND-term search
+        -- (e.g. `function foo` in the gO document-symbol picker returns nothing
+        -- once you type the space). cmake still needs a C compiler present.
+        local p = ev.data.path
+        if vim.fn.executable 'make' == 1 then
+          run_build(name, { 'make' }, p)
+        elseif vim.fn.executable 'cmake' == 1 then
+          if run_build(name, { 'cmake', '-S.', '-Bbuild', '-DCMAKE_BUILD_TYPE=Release' }, p) == 0
+            and run_build(name, { 'cmake', '--build', 'build', '--config', 'Release' }, p) == 0 then
+            run_build(name, { 'cmake', '--install', 'build', '--prefix', 'build' }, p)
+          end
+        end
         return
       end
 
@@ -520,7 +534,12 @@ do
     gh 'nvim-telescope/telescope.nvim',
     gh 'nvim-telescope/telescope-ui-select.nvim',
   }
-  if vim.fn.executable 'make' == 1 then table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim') end
+  -- Add fzf-native if it can be built — `make` on Unix, or cmake (+ a C
+  -- compiler) on Windows. It gives Telescope fzf-style matching where a space
+  -- separates AND-terms; without it, `function foo` in a symbol picker breaks.
+  if vim.fn.executable 'make' == 1 or vim.fn.executable 'cmake' == 1 then
+    table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim')
+  end
 
   -- NOTE: You can install multiple plugins at once
   vim.pack.add(telescope_plugins)
@@ -530,12 +549,20 @@ do
     -- You can put your default mappings / updates / etc. in here
     --  All the info you're looking for is in `:help telescope.setup()`
     --
-    -- defaults = {
-    --   mappings = {
-    --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-    --   },
-    -- },
-    -- pickers = {}
+    defaults = {
+      mappings = {
+        -- For server-driven pickers (gW symbols, <leader>sg grep) where the
+        -- prompt is a server query, not fuzzy: freeze the current results
+        -- and fuzzy-filter them client-side from here on.
+        i = { ['<C-Space>'] = 'to_fuzzy_refine' },
+      },
+    },
+    -- Same visibility policy as the shell (fd alias, FZF_* in zshrc):
+    -- show hidden files, still respect .gitignore, never descend into .git
+    pickers = {
+      find_files = { find_command = { 'fd', '--type', 'f', '--hidden', '--exclude', '.git' } },
+      live_grep = { additional_args = { '--hidden', '--glob', '!.git/*' } },
+    },
     extensions = {
       ['ui-select'] = { require('telescope.themes').get_dropdown() },
     },
@@ -1060,7 +1087,7 @@ do
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- require 'custom.plugins'
+  require 'custom.plugins'
 end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
