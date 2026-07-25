@@ -18,6 +18,6 @@ vim.pack.add {
 
 require('hardtime').setup {
   restriction_mode = 'block', -- refuse the key, don't just hint
-  disable_mouse = false, -- keep the mouse (tmux runs with mouse on by choice)
+  disable_mouse = true, -- no mouse navigation in nvim either (keyboard-only)
   -- arrow keys are blocked in normal + insert via hardtime's default disabled_keys
 }
