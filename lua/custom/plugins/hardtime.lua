@@ -1,12 +1,14 @@
--- hardtime.nvim — nudges you toward better motions when you do the inefficient
--- thing (holding j/k, hammering a key, dll-instead-of-2dl).
+-- hardtime.nvim — enforces better motions. BLOCK mode: when you hammer j/k/h/l
+-- past the limit or reach for an arrow key, the keypress is REFUSED and it
+-- names the better motion. The real-time enforcer half of measure-then-stop;
+-- the keylog + `vimstats` measure, this one stops you.
 --
--- Set up GENTLE on purpose: it HINTS, it never blocks. Pairs with the keylog
--- (lua/custom/plugins/keylog.lua) + `vimstats`: the keylog MEASURES the habit,
--- hardtime nudges it in the moment. Once `vimstats` names your worst habit,
--- tighten this (restriction_mode = 'block', or list arrows in disabled_keys).
+-- Blocks: >3 repeats of h/j/k/l (also +, gj/gk, <C-N/P/M>) within 1s; arrow
+-- keys in normal and insert mode. Pattern hints (dwi->cw, $a->A, Vjjd->d2j, …)
+-- still surface as suggestions. Mouse left ON (tmux runs mouse-on by choice) —
+-- set disable_mouse=true if you want that stopped too.
 --
---   :Hardtime toggle   turn it off/on for a session
+--   :Hardtime toggle   off/on for a session (the escape hatch when it's in your way)
 --   :Hardtime report   most-pressed keys (needs nui.nvim, added below)
 
 vim.pack.add {
@@ -15,7 +17,7 @@ vim.pack.add {
 }
 
 require('hardtime').setup {
-  restriction_mode = 'hint', -- suggest a better motion; never block the key
+  restriction_mode = 'block', -- refuse the key, don't just hint
   disable_mouse = false, -- keep the mouse (tmux runs with mouse on by choice)
-  disabled_keys = {}, -- don't hard-disable arrows; keylog + vimstats track those
+  -- arrow keys are blocked in normal + insert via hardtime's default disabled_keys
 }
