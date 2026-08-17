@@ -125,6 +125,12 @@ do
   --  See `:help 'clipboard'`
   vim.schedule(function() vim.o.clipboard = 'unnamedplus' end)
 
+  -- Over ssh, force the OSC 52 provider. On any macOS box nvim auto-picks
+  -- pbcopy, but on the headless mini there is no pasteboard server (pbcopy
+  -- exits 1), so yanks silently go nowhere. OSC 52 hands the text to the
+  -- terminal at the other end of the ssh session — the laptop's clipboard.
+  if vim.env.SSH_TTY then vim.g.clipboard = 'osc52' end
+
   -- Enable break indent
   vim.o.breakindent = true
 
