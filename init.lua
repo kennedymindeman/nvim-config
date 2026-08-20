@@ -989,6 +989,42 @@ do
 
     sources = {
       default = { 'lsp', 'path', 'snippets' },
+      providers = {
+        lsp = {
+          -- Auto-parens for class constructors. blink's auto_brackets only
+          -- appends () when accepting Function/Method items, and basedpyright
+          -- (unlike Pylance) never adds call parens itself, so accepting
+          -- `Counter` left you to type the parens. Retag Class items as
+          -- Function when the text before the cursor looks like an expression
+          -- position, so accept inserts Counter() with the cursor inside.
+          -- Line-regex heuristic, not type analysis: a wrong guess costs one
+          -- keystroke (missing or unwanted parens). Skips contexts where a
+          -- bare class name is what you want: annotations, imports, class
+          -- bases, except clauses, isinstance/issubclass, inside [...]
+          -- subscripts, and | unions. Side effect: retagged items show the
+          -- Function icon in the menu.
+          transform_items = function(ctx, items)
+            if vim.bo[ctx.bufnr].filetype ~= 'python' then return items end
+            local before = ctx.line:sub(1, ctx.bounds.start_col - 1)
+            local type_position = before:find '^%s*from%s' ~= nil
+              or before:find '^%s*import%s' ~= nil
+              or before:find '^%s*class%s' ~= nil
+              or before:find '[%w_%]]%s*:%s*[%w_%.%[%]|,%s]*$' ~= nil -- x: Coun
+              or before:find '%->%s*[%w_%.%[%]|,%s]*$' ~= nil -- -> Coun
+              or before:find 'except%s*%(?%s*[%w_%.,%s]*$' ~= nil
+              or before:find 'isinstance%s*%([^%)]*$' ~= nil
+              or before:find 'issubclass%s*%([^%)]*$' ~= nil
+              or before:find '|%s*[%w_%.]*$' ~= nil -- int | Coun
+              or select(2, before:gsub('%[', '')) > select(2, before:gsub('%]', '')) -- list[Coun
+            if type_position then return items end
+            local kinds = require('blink.cmp.types').CompletionItemKind
+            for _, item in ipairs(items) do
+              if item.kind == kinds.Class then item.kind = kinds.Function end
+            end
+            return items
+          end,
+        },
+      },
     },
 
     snippets = { preset = 'luasnip' },
