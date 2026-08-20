@@ -131,7 +131,17 @@ do
   -- terminal at the other end of the ssh session — the laptop's clipboard.
   -- SSH_CONNECTION as well as SSH_TTY: tmux propagates only the former into
   -- panes of an already-running server, so SSH_TTY alone misses nvim in tmux.
-  if vim.env.SSH_TTY or vim.env.SSH_CONNECTION then vim.g.clipboard = 'osc52' end
+  -- OSC 52 only copies: terminals refuse the paste query, so `p` from the
+  -- laptop clipboard needs a round trip over the tailnet (`ssh laptop pbpaste`).
+  if vim.env.SSH_TTY or vim.env.SSH_CONNECTION then
+    local osc52 = require 'vim.ui.clipboard.osc52'
+    local paste = { 'ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=3', 'laptop', 'pbpaste' }
+    vim.g.clipboard = {
+      name = 'osc52-copy/ssh-paste',
+      copy = { ['+'] = osc52.copy '+', ['*'] = osc52.copy '*' },
+      paste = { ['+'] = paste, ['*'] = paste },
+    }
+  end
 
   -- Enable break indent
   vim.o.breakindent = true
