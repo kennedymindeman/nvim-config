@@ -966,6 +966,10 @@ do
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
       -- 'super-tab' = Tab accepts (VS-Code-like); swap to 'enter' or 'default' (<C-y>) to taste
       preset = 'super-tab',
+      -- Enter also accepts. Accepting (not just cycling past) an item is what
+      -- applies the LSP's extra edits, e.g. auto-import lines; Enter used to
+      -- fall through to a plain newline and silently skip them.
+      ['<CR>'] = { 'accept', 'fallback' },
 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
