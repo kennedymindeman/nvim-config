@@ -789,7 +789,17 @@ do
       -- (which invalidate the preamble) rebuild without disk I/O. Costs more memory.
       cmd = { 'clangd', '--pch-storage=memory' },
     }, -- C/C++ (diagnostics include clang-tidy checks when the project configures them)
-    basedpyright = {}, -- Python type checking, hover, goto-definition
+    basedpyright = { -- Python type checking, hover, goto-definition
+      settings = {
+        basedpyright = {
+          analysis = {
+            -- Completion for a symbol that isn't imported yet inserts the
+            -- import too (blink.cmp applies the additionalTextEdits).
+            autoImportCompletions = true,
+          },
+        },
+      },
+    },
     ruff = {}, -- Python linting + formatting
     -- gopls = {},
     -- rust_analyzer = {},
@@ -899,7 +909,9 @@ do
     },
     -- You can also specify external formatters in here.
     formatters_by_ft = {
-      python = { 'ruff_organize_imports', 'ruff_format' },
+      -- ruff_fix (ruff check --fix-only) removes unused imports on save;
+      -- organize_imports only sorts, it never deletes.
+      python = { 'ruff_fix', 'ruff_organize_imports', 'ruff_format' },
       -- lua uses stylua, c/cpp use clangd's clang-format via the lsp_format fallback
       -- rust = { 'rustfmt' },
     },
