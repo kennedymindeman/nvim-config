@@ -132,6 +132,27 @@ type any expression valid in the paused frame; in **Threads**, `<CR>` on a frame
 jumps there so Scopes shows *that* frame's variables. The panel is a normal window —
 `<C-w>_` maximizes it, `<C-w>=` re-equalizes.
 
+## Testing (neotest + pytest)
+
+Run tests without leaving the editor. Results show as pass/fail signs in the
+gutter next to each test, and every failure becomes a diagnostic at the line
+that raised, so the message is right there inline.
+
+| Keys | Does |
+|---|---|
+| `<space>tn` | run the **n**earest test (cursor inside/near it) |
+| `<space>tf` | run the current **f**ile |
+| `<space>ta` | run **a**ll tests (whole suite) |
+| `<space>tl` | rerun the **l**ast run |
+| `]t` / `[t` | jump to next / previous **failed** test |
+| `<space>ts` | toggle the **s**ummary tree (whole suite at a glance; `r` runs, `o` shows output) |
+| `<space>to` | toggle the **o**utput panel (raw pytest output) |
+| `<space>td` | **d**ebug the nearest test via DAP (same UI as `<space>dt`) |
+
+The loop after a refactor: `<space>ta`, then `]t` to land on the first failure
+and read the diagnostic. Fix, `<space>tl` to rerun. If a failure needs stepping
+through, `<space>b` on a line and `<space>td`.
+
 ## Odds and ends worth knowing early
 
 - `ciw` / `ci(` / `ci"` — change inside word / parens / quotes (mini.ai makes these smart)

@@ -422,7 +422,7 @@ do
     -- Document existing key chains
     spec = {
       { '<leader>s', group = '[S]earch', mode = { 'n', 'v' } },
-      { '<leader>t', group = '[T]oggle' },
+      { '<leader>t', group = '[T]est (+ toggles)' }, -- neotest, plus <leader>th inlay hints
       { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } }, -- Enable gitsigns recommended keymaps first
       { '<leader>d', group = '[D]ebug' }, -- nvim-dap: breakpoints, stepping, dap-view sections
       { 'gr', group = 'LSP Actions', mode = { 'n' } },
@@ -1141,6 +1141,7 @@ do
   -- require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
   require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neotest'
   -- require 'kickstart.plugins.neo-tree'
   -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
