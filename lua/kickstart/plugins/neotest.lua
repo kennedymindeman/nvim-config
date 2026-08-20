@@ -33,3 +33,4 @@ vim.keymap.set('n', ']t', function() neotest.jump.next { status = 'failed' } end
 vim.keymap.set('n', '[t', function() neotest.jump.prev { status = 'failed' } end, { desc = 'Prev failed test' })
 vim.keymap.set('n', '<leader>ts', function() neotest.summary.toggle() end, { desc = '[T]est [S]ummary tree' })
 vim.keymap.set('n', '<leader>to', function() neotest.output_panel.toggle() end, { desc = '[T]est [O]utput panel' })
+vim.keymap.set('n', '<leader>tO', function() neotest.output.open { enter = true, auto_close = true } end, { desc = '[T]est [O]utput for nearest' })
