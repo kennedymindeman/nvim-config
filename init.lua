@@ -1077,8 +1077,10 @@ do
     -- in case there is no indent query, the indentexpr will fallback to the vim's built in one
     local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
 
-    -- Enable treesitter based indentation
-    if has_indent_query then vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
+    -- Enable treesitter based indentation — except for python, where the stock
+    -- indentexpr is better: it dedents else/elif/except/finally to the matching
+    -- block as you type them (via indentkeys), which the treesitter one misses.
+    if has_indent_query and language ~= 'python' then vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
   end
 
   local available_parsers = require('nvim-treesitter').get_available()
