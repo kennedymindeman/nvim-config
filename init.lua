@@ -948,8 +948,8 @@ do
   --    See the README about individual language/framework/plugin snippets:
   --    https://github.com/rafamadriz/friendly-snippets
   --
-  -- vim.pack.add { gh 'rafamadriz/friendly-snippets' }
-  -- require('luasnip.loaders.from_vscode').lazy_load()
+  vim.pack.add { gh 'rafamadriz/friendly-snippets' }
+  require('luasnip.loaders.from_vscode').lazy_load()
 
   -- [[ Autocomplete Engine ]]
   vim.pack.add { { src = gh 'saghen/blink.cmp', version = vim.version.range '1.*' } }
@@ -1000,8 +1000,18 @@ do
     },
 
     sources = {
-      default = { 'lsp', 'path', 'snippets' },
+      -- 'copilot' is served by blink-copilot, installed and configured in
+      -- lua/custom/plugins/copilot.lua, which loads later in this file —
+      -- fine, because a provider's module is only required once a completion
+      -- is requested.
+      default = { 'lsp', 'path', 'snippets', 'copilot' },
       providers = {
+        copilot = {
+          name = 'copilot',
+          module = 'blink-copilot',
+          -- Copilot round-trips to a server: show the menu without waiting.
+          async = true,
+        },
         lsp = {
           -- Auto-parens for class constructors. blink's auto_brackets only
           -- appends () when accepting Function/Method items, and basedpyright
